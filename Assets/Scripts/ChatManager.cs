@@ -1,3 +1,4 @@
+using System;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -6,13 +7,12 @@ public class ChatManager : MonoBehaviour
     private ulong _localClientId;
     
     [SerializeField] private ChatBoxManager _chatBoxManager;
-    [SerializeField]private NetworkController _networkController; 
+    [SerializeField]private NetworkController _networkController;
 
-    private void OnEnable()
+    private void Start()
     {
         _chatBoxManager = FindFirstObjectByType<ChatBoxManager>();
         ChatBoxManager.Instance.OnMessageSend += MessageSent;
-        
         GetLocalClientId();
     }
 
