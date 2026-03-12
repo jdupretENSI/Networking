@@ -27,7 +27,7 @@ public class NetworkController : NetworkBehaviour
     }
     
     // On the peer/client sending the message
-    [ServerRpc]
+    [ServerRpc(RequireOwnership = false)]
     private void SendChatMessageServerRpc(ChatBoxMessage message, ServerRpcParams rpcParams = default)
     {
         // Get the REAL sender ID from network system
@@ -41,6 +41,7 @@ public class NetworkController : NetworkBehaviour
     [ClientRpc] 
     private void BroadcastChatMessageClientRpc(ChatBoxMessage message, ulong senderId)
     {
+        Debug.Log(message);
         // Make sure ChatManager exists
         if (_chatManager != null)
         {

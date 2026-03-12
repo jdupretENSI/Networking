@@ -18,12 +18,15 @@ public class ChatBoxManager : MonoBehaviour
     [SerializeField] private Transform _textHolder;
     [SerializeField] private ScrollRect _scrollRect;
     [SerializeField] private TMP_Text _prfText;
+    [SerializeField] private GameObject _panelConnection;
+    [SerializeField] private GameObject _panelLeave;
+    [SerializeField] private GameObject _panelEndSesh;
 
     [SerializeField] private Sprite _spriteDropdownColor;
 
     [SerializeField] private Color[] _colors =
     {
-        Color.black, Color.red, Color.blue, Color.green
+        Color.black, Color.red, Color.blue, Color.green, Color.blueViolet, 
     };
 
     private string _currentPlayerName;
@@ -32,6 +35,9 @@ public class ChatBoxManager : MonoBehaviour
     private string[] _playerNames;
 
     public string CurrentPlayerName => _currentPlayerName;
+
+    public string IP { get; set; }
+    public string Port { get; set; }
 
     /// <summary>
     /// Initializes the singleton instance, sets up event listeners for UI elements
@@ -141,7 +147,7 @@ public class ChatBoxManager : MonoBehaviour
     ///</summary>
     private void SetCurrentTarget(int index)
     {
-        if (index == -1)
+        if (index is -1 or 0)
         {
             _currentTarget = "All";
             return;
@@ -193,7 +199,22 @@ public class ChatBoxManager : MonoBehaviour
     ///</summary>
     private Color GetColorById(int id)
     {
-        if (_colors.Length > id) return _colors[id];
-        return Color.black;
+        return _colors.Length > id ? _colors[id] : Color.black;
+    }
+
+    private void SetupHost()
+    {
+        SetCurrentUser(_currentPlayerName);
+
+        _panelConnection.SetActive(false);
+        _panelEndSesh.SetActive(true);
+    }
+
+    private void SetupClient()
+    {
+        SetCurrentUser(_currentPlayerName);
+
+        _panelConnection.SetActive(false);
+        _panelLeave.SetActive(true);
     }
 }
