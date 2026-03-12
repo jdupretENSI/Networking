@@ -14,7 +14,8 @@ public class ChatManager : MonoBehaviour
 
     private void Start()
     {
-        _chatBoxManager = FindFirstObjectByType<ChatBoxManager>();
+        if (!_chatBoxManager) _chatBoxManager = FindFirstObjectByType<ChatBoxManager>();
+        
         ChatBoxManager.Instance.OnMessageSend += MessageSent;
 
         NetworkManager.Singleton.OnConnectionEvent += GetConnectedPeers;
@@ -46,14 +47,6 @@ public class ChatManager : MonoBehaviour
         string senderType = senderId == _localClientId ? "Me" : $"Player {senderId}";
         _chatBoxManager.DisplayMessage(message);
     }
-    // Get client ID properly from NetworkManager
-    private void SetLocalClientId()
-    {
-        if (NetworkManager.Singleton != null)
-        {
-            _chatBoxManager.SetCurrentUser(NetworkManager.Singleton.LocalClientId.ToString());
-        }
-    }
 
     /// <summary>
     /// Not ideal, but every time a new client connects or disconnects
@@ -63,29 +56,34 @@ public class ChatManager : MonoBehaviour
     /// <param name="newPeerId"></param>
     private void GetConnectedPeers(NetworkManager nm, ConnectionEventData ced)
     {
-        //SetLocalClientId();
-        
         if (!NetworkManager.Singleton) return;
 
         ulong localClientId = NetworkManager.Singleton.LocalClientId;
-    
-        stringContainer[] peers = NetworkManager.Singleton.ConnectedClients
+        
+        IEnumerable<ulong> allClientIds = NetworkManager.Singleton.ConnectedClients
             .Where(client 
-                => client.Key != localClientId)  // Filter out self
+                => client.Key != localClientId)
             .Select(client 
-                => new stringContainer(client.Value.ClientId.ToString()))
-            .ToArray();
+                => client.Key);
 
-        _chatBoxManager.SetupDropdownTargets(peers);
+        stringContainer[] clients = allClientIds
+            .Select(id 
+                => new stringContainer(_networkController.ClientUsernames
+                    .TryGetValue(id, out string username) 
+                    ? username : id.ToString()))
+            .ToArray();
+        
+        _chatBoxManager.SetupDropdownTargets(clients);
     }
 
-    public void SetupHostServer()
+    public void SetupHostServer() 
     {
         UnityTransport transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
         transport.ConnectionData.Address = _chatBoxManager.IP;
         transport.ConnectionData.Port = Convert.ToUInt16(_chatBoxManager.Port);
         
         NetworkManager.Singleton.StartHost();
+        _networkController.ClientUsernames.Add(NetworkManager.Singleton.LocalClientId, _chatBoxManager.CurrentPlayerName);
     }
 
     public void ClientConnectToHost()
@@ -94,9 +92,9 @@ public class ChatManager : MonoBehaviour
         UnityTransport transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
         transport.ConnectionData.Address = _chatBoxManager.IP;
         transport.ConnectionData.Port = Convert.ToUInt16(_chatBoxManager.Port);
-
-        // Connect as client
+        
         NetworkManager.Singleton.StartClient();
+        _networkController.SendPlayerJoinedServerRpc(_chatBoxManager.CurrentPlayerName);
     }
 
     public void EndChat()
