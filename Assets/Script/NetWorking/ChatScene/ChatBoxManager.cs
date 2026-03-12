@@ -202,19 +202,30 @@ public class ChatBoxManager : MonoBehaviour
         return _colors.Length > id ? _colors[id] : Color.black;
     }
 
-    private void SetupHost()
+    public void SetupHost()
     {
         SetCurrentUser(_currentPlayerName);
 
         _panelConnection.SetActive(false);
+        
         _panelEndSesh.SetActive(true);
     }
 
-    private void SetupClient()
+    public void SetupClient()
     {
         SetCurrentUser(_currentPlayerName);
 
         _panelConnection.SetActive(false);
+        
         _panelLeave.SetActive(true);
+    }
+
+    public void EndChat()
+    {
+        _panelConnection.SetActive(true);
+        
+        _panelEndSesh.SetActive(false);
+        _panelLeave.SetActive(false);
+        
     }
 }

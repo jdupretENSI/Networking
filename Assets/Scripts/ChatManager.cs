@@ -98,4 +98,9 @@ public class ChatManager : MonoBehaviour
         // Connect as client
         NetworkManager.Singleton.StartClient();
     }
+
+    public void EndChat()
+    {
+        NetworkManager.Singleton.Shutdown();
+    }
 }
